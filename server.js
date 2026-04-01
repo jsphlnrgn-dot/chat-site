@@ -27,14 +27,8 @@ app.get("/health", (req, res) => {
 res.json({ ok: true });
 });
 
-function buildDataUri(file) {
-const mime = file.mimetype || "application/octet-stream";
-const base64 = file.buffer.toString("base64");
-return `data:${mime};base64,${base64}`;
-}
-
-function extractTextFromResponse(response) {
-if (response?.output_text && typeof response.output_text === "string") {
+function extractReply(response) {
+if (typeof response?.output_text === "string" && response.output_text.trim()) {
 return response.output_text.trim();
 }
 
@@ -42,19 +36,30 @@ if (!Array.isArray(response?.output)) {
 return "";
 }
 
-const pieces = [];
+const parts = [];
 
 for (const item of response.output) {
 if (!Array.isArray(item?.content)) continue;
 
 for (const contentItem of item.content) {
-if (typeof contentItem?.text === "string") {
-pieces.push(contentItem.text);
+if (typeof contentItem?.text === "string" && contentItem.text.trim()) {
+parts.push(contentItem.text.trim());
+} else if (
+typeof contentItem?.text?.value === "string" &&
+contentItem.text.value.trim()
+) {
+parts.push(contentItem.text.value.trim());
 }
 }
 }
 
-return pieces.join("\n").trim();
+return parts.join("\n").trim();
+}
+
+function buildDataUri(file) {
+const mime = file.mimetype || "application/octet-stream";
+const base64 = file.buffer.toString("base64");
+return `data:${mime};base64,${base64}`;
 }
 
 app.post("/api/chat", upload.array("files", 5), async (req, res) => {
@@ -95,11 +100,18 @@ content
 ]
 });
 
-const reply = extractTextFromResponse(response);
+const reply = extractReply(response);
+
+console.log("RAW RESPONSE:");
+console.log(JSON.stringify(response, null, 2));
 
 if (!reply) {
 return res.status(500).json({
-error: "The model returned no readable text."
+error: "No reply returned by model",
+debug: {
+output_text: response?.output_text ?? null,
+output_count: Array.isArray(response?.output) ? response.output.length : 0
+}
 });
 }
 
@@ -107,14 +119,8 @@ res.json({ reply });
 } catch (err) {
 console.error("API route error:", err);
 
-const status = err?.status || 500;
-const message =
-err?.message ||
-err?.error?.message ||
-"Unknown server error";
-
-res.status(status).json({
-error: message
+res.status(err?.status || 500).json({
+error: err?.message || "Unknown server error"
 });
 }
 });
