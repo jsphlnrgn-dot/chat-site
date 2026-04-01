@@ -20,22 +20,22 @@ console.log("GET /health");
 res.json({ ok: true });
 });
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", upload.none(), async (req, res) => {
 console.log("POST /api/chat hit");
-console.log("Message:", req.body?.message || "");
+console.log("req.body:", req.body);
 console.log("Files count:", req.files ? req.files.length : 0);
 
 try {
-const userMessage = req.body?.message || "";
+const userMessage = req.body?.message || "hello";
 
-const input = [
+const input = usermessage
 {
 role: "user",
 content: userMessage || "Hello"
 }
 ];
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", upload.none(), async (req, res) => {
 console.log("POST /api/chat hit");
 
 try {
