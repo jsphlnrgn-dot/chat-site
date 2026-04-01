@@ -20,7 +20,7 @@ console.log("GET /health");
 res.json({ ok: true });
 });
 
-app.post("/api/chat", upload.array("files"), async (req, res) => {
+app.post("/api/chat", async (req, res) => {
 console.log("POST /api/chat hit");
 console.log("Message:", req.body?.message || "");
 console.log("Files count:", req.files ? req.files.length : 0);
@@ -35,22 +35,32 @@ content: userMessage || "Hello"
 }
 ];
 
-if (req.files && req.files.length > 0) {
-for (const file of req.files) {
-const uploaded = await client.files.create({
-file: fs.createReadStream(file.path),
-purpose: "assistants"
+app.post("/api/chat", async (req, res) => {
+console.log("POST /api/chat hit");
+
+try {
+const userMessage = req.body?.message || "";
+
+const response = await client.responses.create({
+model: "gpt-4.1-mini",
+input: userMessage
 });
 
-input.push({
-role: "user",
-content: [
-{ type: "input_text", text: "Analyze this file" },
-{ type: "input_file", file_id: uploaded.id }
-]
+const reply =
+response?.output?.[0]?.content?.[0]?.text ||
+response?.output_text ||
+"No reply";
+
+res.json({ reply });
+
+} catch (err) {
+console.error("Server error:", err);
+
+res.status(500).json({
+error: err.message
 });
 }
-}
+});
 
 const response = await client.responses.create({
 model: "gpt-4.1-mini",
