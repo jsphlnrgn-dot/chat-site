@@ -46,10 +46,7 @@ model: "gpt-4.1-mini",
 input: userMessage
 });
 
-const reply =
-response?.output?.[0]?.content?.[0]?.text ||
-response?.output_text ||
-"No reply";
+const reply = response.output_text || "No reply returned";
 
 res.json({ reply });
 
@@ -67,10 +64,7 @@ model: "gpt-4.1-mini",
 input
 });
 
-const reply =
-response?.output?.[0]?.content?.[0]?.text ||
-response?.output_text ||
-"No reply returned";
+const reply = response.output_text || "No reply returned";
 
 console.log("Reply generated");
 res.json({ reply });
