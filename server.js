@@ -15,14 +15,27 @@ const client = new OpenAI({
 apiKey: process.env.OPENAI_API_KEY
 });
 
+app.get("/health", (req, res) => {
+console.log("GET /health");
+res.json({ ok: true });
+});
+
 app.post("/api/chat", upload.array("files"), async (req, res) => {
+console.log("POST /api/chat hit");
+console.log("Message:", req.body?.message || "");
+console.log("Files count:", req.files ? req.files.length : 0);
+
 try {
-const userMessage = req.body.message;
+const userMessage = req.body?.message || "";
 
-let input = [{ role: "user", content: userMessage }];
+const input = [
+{
+role: "user",
+content: userMessage || "Hello"
+}
+];
 
-// Handle uploaded files
-if (req.files) {
+if (req.files && req.files.length > 0) {
 for (const file of req.files) {
 const uploaded = await client.files.create({
 file: fs.createReadStream(file.path),
@@ -44,12 +57,23 @@ model: "gpt-4.1-mini",
 input
 });
 
-res.json({ reply: response.output[0].content[0].text });
+const reply =
+response?.output?.[0]?.content?.[0]?.text ||
+response?.output_text ||
+"No reply returned";
+
+console.log("Reply generated");
+res.json({ reply });
 } catch (err) {
-console.error(err);
-res.status(500).send("Error");
+console.error("Server route error:", err);
+res.status(500).json({
+error: "Server error",
+details: err.message
+});
 }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+console.log(`Server running on port ${PORT}`);
+});
