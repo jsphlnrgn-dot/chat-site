@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI Chat</title>
 </head>
 <body>
 <h2>ChatGPT Clone</h2>
 
-<input type="file" id="fileInput" multiple><br><br>
+<input type="file" id="fileInput" multiple />
+<br /><br />
 
-<textarea id="message" placeholder="Type message"></textarea><br>
-<button onclick="send()">Send</button>
+<textarea id="message" placeholder="Type message"></textarea>
+<br />
 
-<div id="chat"></div>
+<button id="sendBtn" type="button">Send</button>
+
+<div id="status" style="margin-top:12px; font-weight:bold;"></div>
+<div id="chat" style="margin-top:12px;"></div>
 
 <script src="/app.js"></script>
 </body>
