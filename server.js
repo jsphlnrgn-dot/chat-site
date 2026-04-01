@@ -44,8 +44,7 @@ model: "gpt-4.1-mini",
 input
 });
 
-res.json({ reply: response.output_text });
-
+res.json({ reply: response.output[0].content[0].text });
 } catch (err) {
 console.error(err);
 res.status(500).send("Error");
